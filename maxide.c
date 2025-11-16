@@ -11,11 +11,11 @@ void enable_raw(void) {
   tcgetattr(STDIN_FILENO, &orig);
   struct termios raw = orig;
   raw.c_lflag &= ~(ICANON | ECHO); // no line buffering
-  // raw.c_lflag &= ~(IEXTEN | ISIG);  // disables ^Z ^C
-  raw.c_lflag &= ~(IXON | ICRNL); // no Ctrl-S
-  raw.c_lflag &= ~(OPOST);        // no post processing
-  raw.c_cc[VMIN] = 0;             // non blocking read
-  raw.c_cc[VTIME] = 1;            // with 100 ms timeout
+  raw.c_lflag &= ~(IEXTEN | ISIG); // disables ^Z ^C
+  raw.c_lflag &= ~(IXON | ICRNL);  // no Ctrl-S
+  raw.c_lflag &= ~(OPOST);         // no post processing
+  raw.c_cc[VMIN] = 0;              // non blocking read
+  raw.c_cc[VTIME] = 1;             // with 100 ms timeout
   tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
 
@@ -27,10 +27,11 @@ int main(int argc, char **argv) {
   enable_raw();
   out("\x1b[2J\x1b[H"); // screen cleared
   char c = ' ';
-  char *cc = malloc(sizeof(char));
+  char *cc = malloc(sizeof(char) * 2);
   while (c != 'q') {
     read(STDIN_FILENO, &c, 1);
     cc[0] = c;
+    cc[1] = '\0';
     out("\x1b[2J\x1b[H"); // screen cleared
     out(cc);
   }

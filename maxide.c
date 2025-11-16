@@ -1,22 +1,39 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <termios.h>
 #include <unistd.h>
 
 static struct termios orig;
 
+// setting for the terminal
 void enable_raw(void) {
   tcgetattr(STDIN_FILENO, &orig);
   struct termios raw = orig;
-  raw.c_lflag &= ~(ICANON | ECHO);
-  // raw.c_lflag &= ~(IEXTEN | ISIG);
-  raw.c_lflag &= ~(IXON | ICRNL);
-  raw.c_lflag &= ~(OPOST);
-  raw.c_cc[VMIN] = 0;
-  raw.c_cc[VTIME] = 1;
+  raw.c_lflag &= ~(ICANON | ECHO); // no line buffering
+  // raw.c_lflag &= ~(IEXTEN | ISIG);  // disables ^Z ^C
+  raw.c_lflag &= ~(IXON | ICRNL); // no Ctrl-S
+  raw.c_lflag &= ~(OPOST);        // no post processing
+  raw.c_cc[VMIN] = 0;             // non blocking read
+  raw.c_cc[VTIME] = 1;            // with 100 ms timeout
   tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
 
 void disable_raw(void) { tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig); }
 
-int main(int argc, int **argv) {}
+void out(const char *s) { write(STDOUT_FILENO, s, strlen(s)); }
+
+int main(int argc, char **argv) {
+  enable_raw();
+  out("\x1b[2J\x1b[H"); // screen cleared
+  char c = ' ';
+  char *cc = malloc(sizeof(char));
+  while (c != 'q') {
+    read(STDIN_FILENO, &c, 1);
+    cc[0] = c;
+    out("\x1b[2J\x1b[H"); // screen cleared
+    out(cc);
+  }
+  disable_raw();
+  return 0;
+}

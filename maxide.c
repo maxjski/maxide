@@ -24,16 +24,23 @@ void disable_raw(void) { tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig); }
 void out(const char *s) { write(STDOUT_FILENO, s, strlen(s)); }
 
 int main(int argc, char **argv) {
+  atexit(disable_raw);
   enable_raw();
   out("\x1b[2J\x1b[H"); // screen cleared
   char c = ' ';
-  char *cc = malloc(sizeof(char) * 2);
+  char *doc = malloc(sizeof(char) * 1000);
+
+  for (int i = 0; i < 1000; i++) {
+    doc[i] = 'z';
+  }
+
+  doc[999] = '\0';
+
   while (c != 'q') {
     read(STDIN_FILENO, &c, 1);
-    cc[0] = c;
-    cc[1] = '\0';
+    doc[0] = c;
     out("\x1b[2J\x1b[H"); // screen cleared
-    out(cc);
+    out(doc);
   }
   disable_raw();
   return 0;

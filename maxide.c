@@ -47,29 +47,46 @@ int main(int argc, char **argv) {
 
   doc[999] = '\0';
 
-  char **page = malloc(sizeof(char) * terminalWidth * terminalHeight);
+  char *page = malloc(sizeof(char) * terminalWidth * terminalHeight + 1);
 
-  char *str;
-  char *cursor;
+  for (int i = 0; i < terminalWidth * terminalHeight; i++) {
+    page[i] = ' ';
+  }
+  page[terminalWidth * terminalHeight] = '\0';
+  // page[terminalWidth * terminalHeight - 1] =
+  //     'X'; // this will print on the bottom right
+  // page[((terminalHeight - 1) * terminalWidth) - 1] =
+  //     'H'; // this will print on the right of the second last line
 
-  // while (c != 'q') {
-  //   read(STDIN_FILENO, &c, 1);
-  //   str = get_window_sizes_string();
-  //   doc[0] = c;
-  //   out("\x1b[2J\x1b[H"); // screen cleared
-  //
-  //   cursor = get_thingy();
-  //   strcat(str, "\n");
-  //   strcat(str, cursor);
-  //   out(str);
-  // }
+  // draw mode on the bottom left, insert or move.
+  int cursorX = 0;
+  int cursorY = 0;
+  page[(terminalHeight - 1) * terminalWidth] = 'M';
+  page[(terminalHeight - 1) * terminalWidth + 1] = 'O';
+  page[(terminalHeight - 1) * terminalWidth + 2] = 'V';
+  page[(terminalHeight - 1) * terminalWidth + 3] = 'E';
 
-  int cursorRow;
-  int cursorCol;
-  printf("HERE\n");
-  get_cursor_pos(&cursorRow, &cursorCol);
-  printf("%d row, %d col positions", cursorRow, cursorCol);
-  free(str);
+  while (c != 'q') {
+    read(STDIN_FILENO, &c, 1);
+    // page[0] = c;
+    page[cursorX + cursorY] = ' ';
+    if (c == 'h' && cursorX > 0) {
+      cursorX--;
+      c = ' ';
+    } else if (c == 'j' && cursorY < (terminalHeight - 2) * terminalWidth) {
+      cursorY += terminalWidth;
+      c = ' ';
+    } else if (c == 'k' && cursorY > terminalWidth) {
+      cursorY -= terminalWidth;
+      c = ' ';
+    } else if (c == 'l' && cursorX < terminalWidth - 1) {
+      cursorX += 1;
+      c = ' ';
+    }
+    page[cursorX + cursorY] = 'X';
+    out("\x1b[2J\x1b[H"); // screen cleared
+    out(page);
+  }
 
   disable_raw();
   return 0;

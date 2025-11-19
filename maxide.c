@@ -7,6 +7,8 @@
 
 static struct termios orig;
 
+char *get_window_sizes_string();
+
 // setting for the terminal
 void enable_raw(void) {
   tcgetattr(STDIN_FILENO, &orig);
@@ -28,14 +30,8 @@ int main(int argc, char **argv) {
   printf("TESTETS\n");
   atexit(disable_raw);
 
-  struct winsize w;
-  ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-
   char width[20];
   char height[20];
-
-  sprintf(width, "%d", w.ws_col);
-  sprintf(height, "%d", w.ws_row);
 
   enable_raw();
   // out("\x1b[2J\x1b[H"); // screen cleared
@@ -47,42 +43,32 @@ int main(int argc, char **argv) {
   }
 
   doc[999] = '\0';
-  char str[100];
-  int i = 0;
-  short f = 0;
-  int j;
-  while (i < 100) {
-    if (f == 0) {
-      if (width[i] != '\0') {
-        str[i] = width[i];
-      } else {
-        f = 1;
-        j = i;
-        str[i] = ' ';
-        i++;
-      }
-    }
 
-    if (f == 1) {
-      if (height[i - j] != '\0') {
-        str[i] = height[i - j];
-      } else {
-        str[i] = '\0';
-        i = 101;
-      }
-    }
-    i++;
+  char *str;
+  while (c != 'q') {
+    read(STDIN_FILENO, &c, 1);
+    str = get_window_sizes_string();
+    doc[0] = c;
+    out("\x1b[2J\x1b[H"); // screen cleared
+    out(str);
   }
 
-  printf("test");
-  printf(str);
+  free(str);
 
-  // while (c != 'q') {
-  //   read(STDIN_FILENO, &c, 1);
-  //   doc[0] = c;
-  //   out("\x1b[2J\x1b[H"); // screen cleared
-  //   out(str);
-  // }
-  // disable_raw();
-  // return 0;
+  disable_raw();
+  return 0;
+}
+
+char *get_window_sizes_string() {
+  struct winsize w;
+  ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+  char *width = malloc(sizeof(char) * 20);
+  char height[20];
+
+  sprintf(width, "%d", w.ws_col);
+  sprintf(height, "%d", w.ws_row);
+
+  strcat(width, " ");
+  strcat(width, height);
+  return width;
 }

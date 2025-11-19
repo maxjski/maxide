@@ -8,7 +8,7 @@
 
 static struct termios orig;
 
-char *get_window_sizes_string();
+void get_window_size(unsigned short *wd, unsigned short *hg, struct winsize w);
 
 void get_cursor_pos(int *col, int *row);
 // setting for the terminal
@@ -29,11 +29,12 @@ void disable_raw(void) { tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig); }
 void out(const char *s) { write(STDOUT_FILENO, s, strlen(s)); }
 
 int main(int argc, char **argv) {
-  printf("TESTETS\n");
   atexit(disable_raw);
 
-  char width[20];
-  char height[20];
+  struct winsize w;
+  ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+  unsigned short terminalHeight = w.ws_row;
+  unsigned short terminalWidth = w.ws_col;
 
   enable_raw();
   // out("\x1b[2J\x1b[H"); // screen cleared
@@ -46,10 +47,11 @@ int main(int argc, char **argv) {
 
   doc[999] = '\0';
 
-  char **page;
+  char **page = malloc(sizeof(char) * terminalWidth * terminalHeight);
 
   char *str;
   char *cursor;
+
   // while (c != 'q') {
   //   read(STDIN_FILENO, &c, 1);
   //   str = get_window_sizes_string();
@@ -62,32 +64,17 @@ int main(int argc, char **argv) {
   //   out(str);
   // }
 
-  int x = 0;
-  int y = 1;
+  int cursorRow;
+  int cursorCol;
   printf("HERE\n");
-  get_cursor_pos(&x, &y);
+  get_cursor_pos(&cursorRow, &cursorCol);
+  printf("%d row, %d col positions", cursorRow, cursorCol);
   free(str);
 
   disable_raw();
   return 0;
 }
 
-// gotta free it
-char *get_window_sizes_string() {
-  struct winsize w;
-  ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-  char *width = malloc(sizeof(char) * 20);
-  char height[20];
-
-  sprintf(width, "%d", w.ws_col);
-  sprintf(height, "%d", w.ws_row);
-
-  strcat(width, " ");
-  strcat(width, height);
-  return width;
-}
-
-// gotta free answer bruh
 void get_cursor_pos(int *col, int *row) {
   char buf[32];
   unsigned int i = 0;

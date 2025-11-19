@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,6 +10,7 @@ static struct termios orig;
 
 char *get_window_sizes_string();
 
+void get_cursor_pos(int *col, int *row);
 // setting for the terminal
 void enable_raw(void) {
   tcgetattr(STDIN_FILENO, &orig);
@@ -47,14 +49,23 @@ int main(int argc, char **argv) {
   char **page;
 
   char *str;
-  while (c != 'q') {
-    read(STDIN_FILENO, &c, 1);
-    str = get_window_sizes_string();
-    doc[0] = c;
-    out("\x1b[2J\x1b[H"); // screen cleared
-    out(str);
-  }
+  char *cursor;
+  // while (c != 'q') {
+  //   read(STDIN_FILENO, &c, 1);
+  //   str = get_window_sizes_string();
+  //   doc[0] = c;
+  //   out("\x1b[2J\x1b[H"); // screen cleared
+  //
+  //   cursor = get_thingy();
+  //   strcat(str, "\n");
+  //   strcat(str, cursor);
+  //   out(str);
+  // }
 
+  int x = 0;
+  int y = 1;
+  printf("HERE\n");
+  get_cursor_pos(&x, &y);
   free(str);
 
   disable_raw();
@@ -77,16 +88,23 @@ char *get_window_sizes_string() {
 }
 
 // gotta free answer bruh
-char *get_thingy() {
-  write(STDIN_FILENO, "\x1B[6n\n", 5);
+void get_cursor_pos(int *col, int *row) {
+  char buf[32];
+  unsigned int i = 0;
+  write(STDOUT_FILENO, "\x1B[6n", 5);
 
-  char *answer = malloc(sizeof(char));
-  size_t answerlen = 0;
-  while (answerlen < sizeof(answer) - 1 &&
-         read(STDIN_FILENO, answer + answerlen, 1) == 1)
-    if (answer[answerlen++] == 'R')
+  while (i < 30 && read(STDIN_FILENO, &buf[i], 1) == 1) {
+    // printf("Byte %d: '%c' (Decimal: %d)\r\n", i, buf[i], buf[i]);
+    if (buf[i] == 'R') {
       break;
-  answer[answerlen] = '\0';
-
-  return answer;
+    }
+    i++;
+  }
+  buf[i] = '\0';
+  // Parse the result (Expected: ESC [ rows ; cols R)
+  if (buf[0] == 27 && buf[1] == '[') {
+    if (sscanf(&buf[2], "%d;%d", row, col) == 2) {
+      // printf("SUCCESS: Rows=%d, Cols=%d\r\n", *row, *col);
+    }
+  }
 }

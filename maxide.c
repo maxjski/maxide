@@ -19,8 +19,10 @@ void enable_raw(void) {
   raw.c_lflag &= ~(IEXTEN | ISIG); // disables ^Z ^C
   raw.c_lflag &= ~(IXON | ICRNL);  // no Ctrl-S
   raw.c_lflag &= ~(OPOST);         // no post processing
-  raw.c_cc[VMIN] = 0;              // non blocking read
-  raw.c_cc[VTIME] = 1;             // with 100 ms timeout
+
+  // blocking read, so terminal only updates if there is input
+  raw.c_cc[VMIN] = 1;
+  raw.c_cc[VTIME] = 0; // no timeout for blocking read
   tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
 
@@ -76,7 +78,7 @@ int main(int argc, char **argv) {
     } else if (c == 'j' && cursorY < (terminalHeight - 2) * terminalWidth) {
       cursorY += terminalWidth;
       c = ' ';
-    } else if (c == 'k' && cursorY > terminalWidth) {
+    } else if (c == 'k' && (cursorY - terminalWidth) >= 0) {
       cursorY -= terminalWidth;
       c = ' ';
     } else if (c == 'l' && cursorX < terminalWidth - 1) {
@@ -84,7 +86,7 @@ int main(int argc, char **argv) {
       c = ' ';
     }
     page[cursorX + cursorY] = 'X';
-    out("\x1b[2J\x1b[H"); // screen cleared
+    // out("\x1b[2J\x1b[H"); // screen cleared
     out(page);
   }
 

@@ -44,6 +44,8 @@ int main(int argc, char **argv) {
 
   doc[999] = '\0';
 
+  char **page;
+
   char *str;
   while (c != 'q') {
     read(STDIN_FILENO, &c, 1);
@@ -59,6 +61,7 @@ int main(int argc, char **argv) {
   return 0;
 }
 
+// gotta free it
 char *get_window_sizes_string() {
   struct winsize w;
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
@@ -71,4 +74,19 @@ char *get_window_sizes_string() {
   strcat(width, " ");
   strcat(width, height);
   return width;
+}
+
+// gotta free answer bruh
+char *get_thingy() {
+  write(STDIN_FILENO, "\x1B[6n\n", 5);
+
+  char *answer = malloc(sizeof(char));
+  size_t answerlen = 0;
+  while (answerlen < sizeof(answer) - 1 &&
+         read(STDIN_FILENO, answer + answerlen, 1) == 1)
+    if (answer[answerlen++] == 'R')
+      break;
+  answer[answerlen] = '\0';
+
+  return answer;
 }

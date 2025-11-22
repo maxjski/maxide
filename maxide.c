@@ -68,12 +68,14 @@ int main(int argc, char **argv) {
   page[(terminalHeight - 1) * terminalWidth + 2] = 'V';
   page[(terminalHeight - 1) * terminalWidth + 3] = 'E';
   char temp = ' ';
+  char newtemp = ' ';
   while (c != 'q') {
     read(STDIN_FILENO, &c, 1);
     // page[0] = c;
 
-    // temp = page[cursorX + cursorY];
-    page[cursorX + cursorY] = ' ';
+    newtemp = page[cursorX + cursorY];
+    page[cursorX + cursorY] = temp;
+    temp = newtemp;
     if (c == 'h' && cursorX > 0) {
       cursorX--;
       c = temp;

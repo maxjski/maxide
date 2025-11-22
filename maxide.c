@@ -73,7 +73,10 @@ int main(int argc, char **argv) {
     read(STDIN_FILENO, &c, 1);
     // page[0] = c;
 
-    newtemp = page[cursorX + cursorY];
+    // newtemp = page[cursorX + cursorY];
+    // if (newtemp == 'X') {
+    //   newtemp = ' ';
+    // }
     page[cursorX + cursorY] = temp;
     temp = newtemp;
     if (c == 'h' && cursorX > 0) {
@@ -95,6 +98,7 @@ int main(int argc, char **argv) {
     } else if (c == 'c') {
       temp = 'c';
     }
+    newtemp = page[cursorX + cursorY];
     page[cursorX + cursorY] = 'X';
     // out("\x1b[2J\x1b[H"); // screen cleared
     out(page);

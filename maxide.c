@@ -67,23 +67,31 @@ int main(int argc, char **argv) {
   page[(terminalHeight - 1) * terminalWidth + 1] = 'O';
   page[(terminalHeight - 1) * terminalWidth + 2] = 'V';
   page[(terminalHeight - 1) * terminalWidth + 3] = 'E';
-
+  char temp = ' ';
   while (c != 'q') {
     read(STDIN_FILENO, &c, 1);
     // page[0] = c;
+
+    // temp = page[cursorX + cursorY];
     page[cursorX + cursorY] = ' ';
     if (c == 'h' && cursorX > 0) {
       cursorX--;
-      c = ' ';
+      c = temp;
+      temp = ' ';
     } else if (c == 'j' && cursorY < (terminalHeight - 2) * terminalWidth) {
       cursorY += terminalWidth;
-      c = ' ';
+      c = temp;
+      temp = ' ';
     } else if (c == 'k' && (cursorY - terminalWidth) >= 0) {
       cursorY -= terminalWidth;
-      c = ' ';
+      c = temp;
+      temp = ' ';
     } else if (c == 'l' && cursorX < terminalWidth - 1) {
       cursorX += 1;
-      c = ' ';
+      c = temp;
+      temp = ' ';
+    } else if (c == 'c') {
+      temp = 'c';
     }
     page[cursorX + cursorY] = 'X';
     // out("\x1b[2J\x1b[H"); // screen cleared

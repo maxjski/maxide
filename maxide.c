@@ -87,13 +87,6 @@ int main(int argc, char **argv) {
   enable_raw();
   // out("\x1b[2J\x1b[H"); // screen cleared
   char c = ' ';
-  char *doc = malloc(sizeof(char) * 1000);
-
-  for (int i = 0; i < 1000; i++) {
-    doc[i] = 'z';
-  }
-
-  doc[999] = '\0';
 
   char *page = malloc(sizeof(char) * terminalWidth * terminalHeight + 1);
 
@@ -115,6 +108,11 @@ int main(int argc, char **argv) {
   page[(terminalHeight - 1) * terminalWidth + 3] = 'E';
   char temp = ' ';
   char newtemp = ' ';
+
+  // page will be what is printed, we need an intermidiate representation of the
+  // actual file content. This would be a list of lists.
+
+  char *content = malloc(sizeof(char) * terminalWidth * terminalHeight + 1);
 
   out(page);
   while (c != 'q') {
@@ -153,6 +151,8 @@ int main(int argc, char **argv) {
     // out("\x1b[2J\x1b[H"); // screen cleared
     out(page);
   }
+
+  free(page);
 
   disable_raw();
   return 0;

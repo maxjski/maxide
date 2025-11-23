@@ -10,7 +10,26 @@ static struct termios orig;
 
 void get_window_size(unsigned short *wd, unsigned short *hg, struct winsize w);
 
-void get_cursor_pos(int *col, int *row);
+void get_cursor_pos(int *col, int *row) {
+  char buf[32];
+  unsigned int i = 0;
+  write(STDOUT_FILENO, "\x1B[6n", 5);
+
+  while (i < 30 && read(STDIN_FILENO, &buf[i], 1) == 1) {
+    // printf("Byte %d: '%c' (Decimal: %d)\r\n", i, buf[i], buf[i]);
+    if (buf[i] == 'R') {
+      break;
+    }
+    i++;
+  }
+  buf[i] = '\0';
+  // Parse the result (Expected: ESC [ rows ; cols R)
+  if (buf[0] == 27 && buf[1] == '[') {
+    if (sscanf(&buf[2], "%d;%d", row, col) == 2) {
+      // printf("SUCCESS: Rows=%d, Cols=%d\r\n", *row, *col);
+    }
+  }
+}
 // setting for the terminal
 void enable_raw(void) {
   tcgetattr(STDIN_FILENO, &orig);
@@ -106,25 +125,4 @@ int main(int argc, char **argv) {
 
   disable_raw();
   return 0;
-}
-
-void get_cursor_pos(int *col, int *row) {
-  char buf[32];
-  unsigned int i = 0;
-  write(STDOUT_FILENO, "\x1B[6n", 5);
-
-  while (i < 30 && read(STDIN_FILENO, &buf[i], 1) == 1) {
-    // printf("Byte %d: '%c' (Decimal: %d)\r\n", i, buf[i], buf[i]);
-    if (buf[i] == 'R') {
-      break;
-    }
-    i++;
-  }
-  buf[i] = '\0';
-  // Parse the result (Expected: ESC [ rows ; cols R)
-  if (buf[0] == 27 && buf[1] == '[') {
-    if (sscanf(&buf[2], "%d;%d", row, col) == 2) {
-      // printf("SUCCESS: Rows=%d, Cols=%d\r\n", *row, *col);
-    }
-  }
 }

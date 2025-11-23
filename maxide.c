@@ -49,6 +49,33 @@ void disable_raw(void) { tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig); }
 
 void out(const char *s) { write(STDOUT_FILENO, s, strlen(s)); }
 
+void moveCursor(char c, char *page, int cursorX, int cursorY, char *temp,
+                char *newtemp, int terminalWidth, int terminalHeight) {
+  page[cursorX + cursorY] = *temp;
+  temp = newtemp;
+  if (c == 'h' && cursorX > 0) {
+    cursorX--;
+    c = *temp;
+    // temp = ' ';
+  } else if (c == 'j' && cursorY < (terminalHeight - 2) * terminalWidth) {
+    cursorY += terminalWidth;
+    c = *temp;
+    // temp = ' ';
+  } else if (c == 'k' && (cursorY - terminalWidth) >= 0) {
+    cursorY -= terminalWidth;
+    c = *temp;
+    // temp = ' ';
+  } else if (c == 'l' && cursorX < terminalWidth - 1) {
+    cursorX += 1;
+    c = *temp;
+    // temp = ' ';
+  } else if (c == 'c') {
+    *temp = 'c';
+  }
+  *newtemp = page[cursorX + cursorY];
+  page[cursorX + cursorY] = 'X';
+}
+
 int main(int argc, char **argv) {
   atexit(disable_raw);
 
@@ -98,6 +125,8 @@ int main(int argc, char **argv) {
     // if (newtemp == 'X') {
     //   newtemp = ' ';
     // }
+    moveCursor(c, page, cursorX, cursorY, &temp, &newtemp, terminalWidth,
+               terminalHeight);
     page[cursorX + cursorY] = temp;
     temp = newtemp;
     if (c == 'h' && cursorX > 0) {

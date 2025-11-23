@@ -15,14 +15,18 @@ typedef struct {
 } DynamicArray;
 
 void setAt(DynamicArray *darray, int i, int j) {
-  if (j > darray->linesCount) {
-    darray->lines = realloc(darray->lines, sizeof(char *) * j);
-    darray->linesLength = realloc(darray->linesLength, sizeof(int) * j);
+  // allocate stuff for new length
+  if (i > darray->linesCount) {
+    darray->lines = realloc(darray->lines, sizeof(char *) * i);
+    darray->linesLength = realloc(darray->linesLength, sizeof(int) * i);
 
-    for (int x = darray->linesCount; x <= j; j++) {
+    for (int x = darray->linesCount; x <= i; i++) {
       darray->lines[x] = malloc(sizeof(char) * 10);
       darray->linesLength[x] = 10;
     }
+  }
+
+  if (j > darray->linesLength[i]) {
   }
 }
 

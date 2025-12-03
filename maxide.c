@@ -9,25 +9,71 @@
 // Dynamic Array structure for content
 
 typedef struct {
-  int linesCount;
-  int *linesLength;
-  void **lines;
+  int linesCount;   // number of rows
+  int *linesLength; // size of each row (columns)
+  char **lines;     // rows
 } DynamicArray;
 
-void setAt(DynamicArray *darray, int i, int j) {
-  // allocate stuff for new length
-  if (i > darray->linesCount) {
-    darray->lines = realloc(darray->lines, sizeof(char *) * i);
-    darray->linesLength = realloc(darray->linesLength, sizeof(int) * i);
+void setAt(DynamicArray *darray, int i, int j, char value) {
+  // grow rows if needed
+  int oldCount = darray->linesCount;
+  int newCount = i + 1;
 
-    for (int x = darray->linesCount; x <= i; i++) {
-      darray->lines[x] = malloc(sizeof(char) * 10);
-      darray->linesLength[x] = 10;
+  if (newCount > oldCount) {
+    char **newLines = realloc(darray->lines, newCount * sizeof *newLines);
+    int *newLengths =
+        realloc(darray->linesLength, newCount * sizeof *newLengths);
+
+    if (!newLines || !newLengths) {
+      // handle allocation failure
+      // if one realloc failed, you may need to free the other, etc.
+      return;
     }
+
+    darray->lines = newLines;
+    darray->linesLength = newLengths;
+
+    // initialize newly added rows
+    for (int x = oldCount; x < newCount; ++x) {
+      darray->lines[x] = malloc(10 * sizeof *darray->lines[x]);
+      if (!darray->lines[x]) {
+        // handle failure; left as an exercise
+        return;
+      }
+      darray->linesLength[x] = 10;
+      // optionally initialize memory
+      // memset(darray->lines[x], 0, 10);
+    }
+
+    darray->linesCount = newCount;
   }
 
-  if (j > darray->linesLength[i]) {
+  // grow columns in row i if needed
+  int oldLen = darray->linesLength[i];
+  int needed = j + 1;
+  if (needed > oldLen) {
+    int newLen = oldLen;
+    if (newLen == 0)
+      newLen = 1;
+    while (newLen < needed) {
+      newLen *= 2; // or simply newLen = needed;
+    }
+
+    char *newRow = realloc(darray->lines[i], newLen * sizeof *newRow);
+    if (!newRow) {
+      // handle failure
+      return;
+    }
+
+    // optionally zero-initialize the new part
+    // memset(newRow + oldLen, 0, (newLen - oldLen) * sizeof *newRow);
+
+    darray->lines[i] = newRow;
+    darray->linesLength[i] = newLen;
   }
+
+  // set the element
+  darray->lines[i][j] = value;
 }
 
 static struct termios orig;

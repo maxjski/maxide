@@ -149,30 +149,6 @@ int main(int argc, char **argv) {
     // }
     moveCursor(c, page, &cursorX, &cursorY, &temp, &newtemp, terminalWidth,
                terminalHeight);
-    // page[cursorX + cursorY] = temp;
-    // temp = newtemp;
-    // if (c == 'h' && cursorX > 0) {
-    //   cursorX--;
-    //   c = temp;
-    //   // temp = ' ';
-    // } else if (c == 'j' && cursorY < (terminalHeight - 2) * terminalWidth) {
-    //   cursorY += terminalWidth;
-    //   c = temp;
-    //   // temp = ' ';
-    // } else if (c == 'k' && (cursorY - terminalWidth) >= 0) {
-    //   cursorY -= terminalWidth;
-    //   c = temp;
-    //   // temp = ' ';
-    // } else if (c == 'l' && cursorX < terminalWidth - 1) {
-    //   cursorX += 1;
-    //   c = temp;
-    //   // temp = ' ';
-    // } else if (c == 'c') {
-    //   temp = 'c';
-    // }
-    // newtemp = page[cursorX + cursorY];
-    // page[cursorX + cursorY] = 'X';
-    // out("\x1b[2J\x1b[H"); // screen cleared
     out(page);
   }
 

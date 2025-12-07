@@ -65,9 +65,6 @@ void setAt(DynamicArray *darray, int i, int j, char value) {
       return;
     }
 
-    // optionally zero-initialize the new part
-    // memset(newRow + oldLen, 0, (newLen - oldLen) * sizeof *newRow);
-
     darray->lines[i] = newRow;
     darray->linesLength[i] = newLen;
   }
